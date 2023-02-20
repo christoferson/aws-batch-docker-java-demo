@@ -1,10 +1,6 @@
 package demo;
 
 import demo.client.AwsS3Client;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 
 public class BasicProcessor {
@@ -30,20 +26,14 @@ public class BasicProcessor {
 		}
 
 	}
-	
+
 	private static void process() {
+
+		String awsRegion = System.getenv("APP_AWS_REGION");
 		
-		String awsKey = System.getenv("AWS_KEY");
-		String awsSecret = System.getenv("AWS_SECRET");
-		String awsRegion = System.getenv("AWS_REGION");
-		
-		Region region = Region.of(awsRegion);
-		
-		AwsCredentials credentials = AwsBasicCredentials.create(awsKey, awsSecret); 
-		
-		AwsCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(credentials);
-		
-		AwsS3Client s3 = new AwsS3Client(credentialsProvider, region);
+		Region region = (awsRegion == null)? Region.US_EAST_1 : Region.of(awsRegion);
+
+		AwsS3Client s3 = new AwsS3Client(region);
 		
 		s3.list();
 		

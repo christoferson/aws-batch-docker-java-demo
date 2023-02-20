@@ -1,8 +1,8 @@
 package demo.client;
 
 import java.time.Duration;
+import java.util.Objects;
 
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.Bucket;
@@ -13,10 +13,11 @@ public class AwsS3Client {
 
 	private S3Client client;
 	
-	public AwsS3Client(AwsCredentialsProvider credentialsProvider, Region region) {
+	public AwsS3Client(Region region) {
+		
+		Objects.requireNonNull(region);
 		
 		this.client = S3Client.builder()
-				  .credentialsProvider(credentialsProvider)
 				  .region(region)
 				  .overrideConfiguration(builder -> builder
 					.apiCallTimeout(Duration.ofMinutes(2))
