@@ -20,6 +20,21 @@
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>s3</artifactId>
 		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/jakarta.xml.bind/jakarta.xml.bind-api -->
+		<dependency>
+		    <groupId>jakarta.xml.bind</groupId>
+		    <artifactId>jakarta.xml.bind-api</artifactId>
+		    <version>4.0.0</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
+		<dependency>
+		    <groupId>com.sun.xml.bind</groupId>
+		    <artifactId>jaxb-impl</artifactId>
+		    <version>4.0.2</version>
+		</dependency>
+
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
