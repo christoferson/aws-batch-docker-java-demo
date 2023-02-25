@@ -1,6 +1,10 @@
 package demo;
 
+import java.util.Arrays;
+
 import demo.client.AwsS3Client;
+import demo.file.CommonFileProcessor;
+import demo.xml.CommonXmlProcessor;
 import software.amazon.awssdk.regions.Region;
 
 public class BasicProcessor {
@@ -11,10 +15,16 @@ public class BasicProcessor {
 
 		demoEnvironmentVariables();
 
-		demoSimulateWork();
+		//demoSimulateWork();
 		
-		demoS3ListBucket();
+		//demoS3ListBucket();
+		
+		//CommonFileProcessor.demoReadFileLineByLine("data/input.txt");
+		
+		CommonXmlProcessor.demoParseXmlFile("data/input.txt");
 
+		CommonFileProcessor.demoWriteFileLineByLine("output.txt", Arrays.asList("1", "2", "漢字"));
+		
 	}
 	
 	private static void demoArguments(String[] args) {
