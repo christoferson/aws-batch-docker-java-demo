@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="FSHINV01">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="IDOC">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="EDI_DC40">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="TABNAM" type="xs:string" />
+                    <xs:element name="MANDT" type="xs:unsignedByte" />
+                    <xs:element name="DOCNUM" type="xs:string" />
+                    <xs:element name="DOCREL" type="xs:unsignedShort" />
+                    <xs:element name="STATUS" type="xs:unsignedByte" />
+                    <xs:element name="DIRECT" type="xs:unsignedByte" />
+                    <xs:element name="OUTMOD" type="xs:unsignedByte" />
+                    <xs:element name="IDOCTYP" type="xs:string" />
+                    <xs:element name="MESTYP" type="xs:string" />
+                    <xs:element name="MESCOD" type="xs:string" />
+                    <xs:element name="MESFCT" type="xs:string" />
+                    <xs:element name="SNDPOR" type="xs:string" />
+                    <xs:element name="SNDPRT" type="xs:string" />
+                    <xs:element name="SNDPRN" type="xs:string" />
+                    <xs:element name="RCVPOR" type="xs:string" />
+                    <xs:element name="RCVPRT" type="xs:string" />
+                    <xs:element name="RCVPFC" type="xs:string" />
+                    <xs:element name="RCVPRN" type="xs:string" />
+                    <xs:element name="CREDAT" type="xs:unsignedInt" />
+                    <xs:element name="CRETIM" type="xs:unsignedInt" />
+                    <xs:element name="SERIAL" type="xs:unsignedLong" />
+                  </xs:sequence>
+                  <xs:attribute name="SEGMENT" type="xs:unsignedByte" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="BEGIN" type="xs:unsignedByte" use="required" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
