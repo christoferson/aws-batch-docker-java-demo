@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.ResourceBundle;
 
 import demo.client.AwsS3Client;
+import demo.csv.CommonCsvProcessor;
 import demo.file.CommonFileProcessor;
 import software.amazon.awssdk.regions.Region;
 
@@ -39,6 +40,9 @@ public class BasicProcessor {
 		}*/
 
 		CommonFileProcessor.demoWriteFileLineByLine("output.txt", Arrays.asList("1", "2", "漢字"));
+		
+		CommonCsvProcessor.writeLineByLine("output-csv.txt", Arrays.asList(
+				new String[] {"1", "2", "漢字"}, new String[] {"1,2,3,A", "2\"'", "漢字"}));
 		
 	}
 	
