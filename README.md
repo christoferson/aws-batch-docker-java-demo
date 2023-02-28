@@ -67,10 +67,9 @@ Bindings are saved in src/main xjb
 
 ### SMTP Mail Client - SES Provider
 
-- Error: Not provider of jakarta.mail.util.StreamProvider was found
-You need to include an implementation instead of just jakarta.mail-api
+To use smtp client, add the following dependency to the pom.xml:
 
-```
+```(xml)
 <!-- https://mvnrepository.com/artifact/jakarta.mail/jakarta.mail-api -->
 <dependency>
     <groupId>jakarta.mail</groupId>
@@ -85,6 +84,15 @@ You need to include an implementation instead of just jakarta.mail-api
     <version>2.0.1</version>
 </dependency>
 ```
+
+##### Error-1
+
+In case you get an error saying: 
+
+> Not provider of jakarta.mail.util.StreamProvider was found
+
+This means that you did not include an implementation e.g. org.eclipse.angus for jakarta.mail-api
+
 
 
 ## Links
