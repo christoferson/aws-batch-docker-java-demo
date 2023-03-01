@@ -1,11 +1,13 @@
 package demo;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 
 import demo.client.AwsS3Client;
 import demo.csv.CommonCsvProcessor;
 import demo.file.CommonFileProcessor;
+import demo.mail.AwsSesSmtpClient;
 import software.amazon.awssdk.regions.Region;
 
 public class BasicProcessor {
@@ -44,6 +46,8 @@ public class BasicProcessor {
 		CommonCsvProcessor.writeLineByLine("output-csv.txt", Arrays.asList(
 				new String[] {"1", "2", "漢字"}, new String[] {"1,2,3,A", "2\"'", "漢字"}));
 		
+		//demoSmtpEmail();
+
 	}
 	
 	private static void demoArguments(String[] args) {
@@ -59,6 +63,14 @@ public class BasicProcessor {
 		
 		System.out.printf("Env.APP_ENV: %s %n", System.getenv("APP_ENV"));
 		
+	}
+	
+	private static void demoSmtpEmail() {
+		AwsSesSmtpClient smtp = new AwsSesSmtpClient("xxx", "yyyy", "email-smtp.us-west-1.amazonaws.com");
+		smtp.sendMessage("mail:from", "mail:to", 
+				"test-subject-with-attachment", 
+				"<html><body>See attachment.</body></html>", 
+				new File("output-csv.txt"));
 	}
 	
 	private static void demoSimulateWork() {
