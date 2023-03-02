@@ -1,0 +1,251 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Batch (Fargate)
+
+Metadata:
+
+  AWS::CloudFormation::Interface:
+
+    ParameterGroups:
+      -
+        Label:
+          default: "Network Configuration"
+        Parameters:
+          - VpcId
+          - VpcSubnetListCompute
+
+Parameters:
+
+  VpcId:
+    Description : "VPC ID"
+    Type: AWS::EC2::VPC::Id
+
+  VpcSubnetListCompute:
+    Description: Private VpcSubnets for Web Servers
+    Type: List<AWS::EC2::Subnet::Id>
+
+  JobDefinitionImage:
+    Description: Job Definition Image
+    Type: String
+    Default: "<docker-id>/aws-batch-docker-java:latest"
+
+  JobDefinitionCommand:
+    Description: Job Definition Command
+    Type: String
+    Default: "echo fargate && ls && java -jar batch.jar"
+        
+Resources:
+
+  BatchServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      #RoleName: !Sub ""
+      Description: "Batch Service Role"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service: batch.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole
+        - !Ref BatchServiceRolePolicy
+      Path: "/" #/
+      Tags:
+        - Key: 'environment'
+          Value: common
+
+  BatchServiceRolePolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      Description: "Batch Service Role ManagedPolicy"
+      #ManagedPolicyName: "batch-managed-policy"
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'logs:CreateLogGroup'
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+              - 's3:GetObjectVersion'
+            Effect: Allow
+            Resource: !Sub "arn:aws:s3:::code-build-demo-bucket/*"
+
+  BatchComputeSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcId
+      GroupDescription: BatchComputeEnvironment
+
+  BatchComputeEnvironment:
+    Type: "AWS::Batch::ComputeEnvironment"
+    Properties:
+      #ComputeEnvironmentName: cfn-env # (Optional)
+      Type: MANAGED
+      State: ENABLED
+      ServiceRole: !GetAtt BatchServiceRole.Arn 
+      ComputeResources:
+        Type: FARGATE #FARGATE or FARGATE_SPOT
+        #MinvCpus: 0
+        MaxvCpus: 8
+        #DesiredvCpus: 0
+        SecurityGroupIds:
+          - !Ref BatchComputeSecurityGroup
+        Subnets: !Ref VpcSubnetListCompute
+        #InstanceRole: !GetAtt BatchComputeInstanceProfile.Arn #Needed if EC2
+        #InstanceTypes:
+        #  - optimal
+        #Tags: {"Name": "Batch (Fargate) Compute Environment"} #tags is not applicable for Fargate
+
+  BatchJobQueue:
+    Type: AWS::Batch::JobQueue
+    Properties:
+      #JobQueueName: cfn-queue # (Optional)
+      Priority: 1 # Job queues with a higher priority (or a higher integer value for the priority parameter) are evaluated first
+      ComputeEnvironmentOrder:
+        - Order: 1
+          ComputeEnvironment: !Ref BatchComputeEnvironment
+      State: ENABLED # if the job queue state is DISABLED, new jobs can't be added to the queue, but jobs already in the queue can finish.
+      Tags: {"Name": "Batch Job Queue"}
+
+  BatchJobLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/batch/logs/my-batch-fargate"
+      RetentionInDays: 1
+      Tags: 
+        - Key: "env"
+          Value: "prd"
+
+  BatchJobRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      #RoleName: !Sub "batch-job-role"
+      Description: !Sub "Batch Job Role"
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+      ManagedPolicyArns:
+        - !Ref BatchJobRolePolicy
+        #- 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+        #- 'arn:aws:iam::aws:policy/AmazonElasticFileSystemFullAccess'
+      Path: /
+      Tags:
+        - Key: 'environment'
+          Value: common
+
+  BatchJobRolePolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      Description: "Batch Role ManagedPolicy"
+      #ManagedPolicyName: "batch-job-managed-policy"
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'eks:Describe*'
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - 'logs:CreateLogGroup'
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - 'ecr:GetAuthorizationToken'
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+              - 's3:GetObjectVersion'
+            Effect: Allow
+            Resource: !Sub "arn:aws:s3:::code-build-demo-bucket/*"
+          - Action:
+              - 'ecr:GetDownloadUrlForLayer'
+              - 'ecr:BatchGetImage'
+              - 'ecr:BatchCheckLayerAvailability'
+              - 'ecr:PutImage'
+              - 'ecr:InitiateLayerUpload'
+              - 'ecr:UploadLayerPart'
+              - 'ecr:CompleteLayerUpload'
+            Effect: Allow
+            Resource: !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/code-image-repository-demo"
+          - Action:
+              - 'ecr:BatchGetImage'
+              - 'ecr:GetDownloadUrlForLayer'
+            Effect: Allow
+            Resource: 
+              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/code-image-repository-cmn/*"
+          - Action:
+              - 'ssm:GetParameter'
+              - 'ssm:GetParameters'
+              - 'ssm:GetParametersByPath'
+            Effect: Allow
+            Resource: 
+              - !Sub "arn:aws:ssm:*:${AWS::AccountId}:parameter/*"
+
+  BatchJobDefinition:
+    Type: AWS::Batch::JobDefinition
+    Properties:
+      Type: container # container | multinode - multinode isn't supported for Fargate
+      #JobDefinitionName: cfn-def # (Optional)
+      PlatformCapabilities: 
+        - FARGATE
+      Parameters: {"codec": "mp4"}
+      ContainerProperties:
+        FargatePlatformConfiguration:
+          PlatformVersion: LATEST
+        Image: !Ref JobDefinitionImage
+        Privileged: false # Must be false for Fargate
+        ReadonlyRootFilesystem: false
+        JobRoleArn: !GetAtt BatchJobRole.Arn  # AM role that the container can assume for AWS permissions. 
+        ExecutionRoleArn: !GetAtt BatchJobRole.Arn #execution role that AWS Batch can assume.
+        #Memory: 1024 # This parameter is deprecated, use resourceRequirements to specify the memory requirements for the job definition.
+        #Vcpus: 2 #Deprecated. For jobs running on EC2 resources, it specifies the number of vCPUs reserved for the job.
+        ResourceRequirements:
+          - Type: VCPU
+            Value: 0.25
+          - Type: MEMORY
+            Value: 512
+        Command: # ["echo","hi"]  ["sh","-c","echo fargate;"] ["sh","-c","echo fargate && ls && java -jar batch.jar"]
+          - sh 
+          - -c 
+          - !Ref JobDefinitionCommand
+        NetworkConfiguration:
+          AssignPublicIp: DISABLED # DISABLED | ENABLED
+        Environment:
+          - Name: APP_ENV
+            Value: "dev"
+        Secrets:
+          - Name: DB_URL
+            ValueFrom: "/demo/database/endpoint"
+        LogConfiguration:
+          LogDriver: awslogs # Fargate resources are restricted to the awslogs and splunk log drivers.
+          Options:
+            awslogs-group: !Ref BatchJobLogGroup #/aws/batch/job
+            awslogs-region: !Ref "AWS::Region"
+            awslogs-stream-prefix: "my-batch"
+          SecretOptions:
+            - Name: LOG_DB_URL
+              ValueFrom: "/demo/database/endpoint" # ARN of Secret or SSM
+      RetryStrategy:
+        Attempts: 1
+      Timeout:
+        AttemptDurationSeconds: 60 #minimum value for the timeout is 60 seconds.
+
+Outputs:
+
+  BatchServiceRoleArn:
+    Value: !Ref BatchServiceRole
