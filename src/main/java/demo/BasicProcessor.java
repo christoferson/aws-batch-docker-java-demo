@@ -8,6 +8,10 @@ import demo.client.AwsS3Client;
 import demo.csv.CommonCsvProcessor;
 import demo.file.CommonFileProcessor;
 import demo.mail.AwsSesSmtpClient;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 
 public class BasicProcessor {
@@ -96,23 +100,35 @@ public class BasicProcessor {
 			System.out.printf("Skip Listing Buckets... %n");
 			return;
 		}
-		
-		try {
 
+		try {
 			
-			
-			Region region = (awsRegion == null)? Region.US_EAST_1 : Region.of(awsRegion);
-			
-			System.out.printf("Listing Buckets: Region=%s %n", region);
+			System.out.printf("Listing Buckets: Region=%s %n", awsRegion);
 	
-			AwsS3Client s3 = new AwsS3Client(region);
+			AwsS3Client s3 = newS3ClientInstance();
 			
-			s3.list();
+			s3.listBucket();
 		
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
+	}
+
+	private static AwsS3Client newS3ClientInstance() {
+		String awsKey = System.getenv("APP_AWS_KEY");
+		String awsSecret = System.getenv("APP_AWS_SECRET");
+		String awsRegion = System.getenv("APP_AWS_REGION");
+		Region region = Region.of(awsRegion);
+		AwsS3Client s3 = null;
+		if (awsKey != null && awsSecret != null) {
+			AwsCredentials credentials = AwsBasicCredentials.create(awsKey, awsSecret); 
+			AwsCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(credentials);
+			s3 = new AwsS3Client(credentialsProvider, region);
+		} else {
+			s3 = new AwsS3Client(region);
+		}
+		return s3;
 	}
 
 }
