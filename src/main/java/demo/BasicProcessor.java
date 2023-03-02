@@ -21,7 +21,7 @@ public class BasicProcessor {
 
 	public static void main(String[] args) {
 		
-		System.out.printf("Application Version: 1.1 %n");
+		System.out.printf("Application Version: 1.2 %n");
 		
 		ResourceBundle resource = ResourceBundle.getBundle("application");
 		System.out.println(resource.getString("s3.bucket.name"));
@@ -127,15 +127,16 @@ public class BasicProcessor {
 
 		try {
 			
-			System.out.printf("Listing Buckets: Region=%s %n", awsRegion);
+			System.out.printf("Listing All Buckets: Region=%s %n", awsRegion);
 	
 			AwsS3Client s3 = newS3ClientInstance();
 			
 			s3.listBucket();
 		
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
+			//e.printStackTrace();
+			//throw new RuntimeException(e);
+			System.err.println("Failed to list all buckets. " + e.getMessage());
 		}
 	}
 	
