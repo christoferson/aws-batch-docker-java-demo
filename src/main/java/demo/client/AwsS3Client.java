@@ -12,6 +12,9 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListBucketsRequest;
 import software.amazon.awssdk.services.s3.model.ListBucketsResponse;
+import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 public class AwsS3Client {
 
@@ -49,6 +52,14 @@ public class AwsS3Client {
 		ListBucketsResponse response = this.client.listBuckets(request);
 		for (Bucket bucket : response.buckets()) {
 			System.out.println(bucket.name());
+		}
+	}
+	
+	public void listObject(String bucket) {
+		ListObjectsRequest request = ListObjectsRequest.builder().bucket(bucket).build();
+		ListObjectsResponse response = this.client.listObjects(request);
+		for (S3Object s3object : response.contents()) {
+			System.out.println(s3object.key());
 		}
 	}
 	
