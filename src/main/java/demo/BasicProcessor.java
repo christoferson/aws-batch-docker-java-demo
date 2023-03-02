@@ -29,6 +29,8 @@ public class BasicProcessor {
 		
 		demoS3ListBucket();
 		
+		demoS3ListObject(resource);
+		
 		//CommonFileProcessor.demoReadFileLineByLine("data/input.txt");
 		
 		//CommonXmlProcessor.demoParseXmlFile("data/input.txt");
@@ -108,6 +110,29 @@ public class BasicProcessor {
 			AwsS3Client s3 = newS3ClientInstance();
 			
 			s3.listBucket();
+		
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private static void demoS3ListObject(ResourceBundle resource) {
+		
+		String awsRegion = System.getenv("APP_AWS_REGION");
+		
+		if (awsRegion == null || awsRegion.isBlank()) {
+			System.out.printf("Skip Listing Buckets... %n");
+			return;
+		}
+
+		try {
+			
+			System.out.printf("Listing Object: Region=%s Bucket=%s %n", awsRegion, resource.getString("s3.bucket.name"));
+	
+			AwsS3Client s3 = newS3ClientInstance();
+			
+			s3.listObject("b2b-dev-pub");
 		
 		} catch (Exception e) {
 			e.printStackTrace();
