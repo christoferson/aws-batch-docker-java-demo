@@ -21,6 +21,8 @@ public class BasicProcessor {
 
 	public static void main(String[] args) {
 		
+		System.out.printf("Application Version: 1.1 %n");
+		
 		ResourceBundle resource = ResourceBundle.getBundle("application");
 		System.out.println(resource.getString("s3.bucket.name"));
 
@@ -92,8 +94,8 @@ public class BasicProcessor {
 		String mailFrom = resource.getString("smtp.mail.from");
 		String mailTo = resource.getString("smtp.mail.to");
 		
-		AwsSesSmtpClient smtp = new AwsSesSmtpClient(smtpUser, smtpPwd, "email-smtp.us-west-1.amazonaws.com");
-		smtp.sendMessage("mail:from", "mail:to", 
+		AwsSesSmtpClient smtp = new AwsSesSmtpClient(smtpUser, smtpPwd, smtpEndpoint);
+		smtp.sendMessage(mailFrom, mailTo, 
 				"test-subject-with-attachment", 
 				"<html><body>See attachment.</body></html>", 
 				new File("output-csv.txt"));
@@ -197,6 +199,7 @@ public class BasicProcessor {
 		Region region = Region.of(awsRegion);
 		AwsS3Client s3 = null;
 		if (awsKey != null && awsSecret != null) {
+			System.out.printf("Using ENV Credentials. %n");
 			AwsCredentials credentials = AwsBasicCredentials.create(awsKey, awsSecret); 
 			AwsCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(credentials);
 			s3 = new AwsS3Client(credentialsProvider, region);
