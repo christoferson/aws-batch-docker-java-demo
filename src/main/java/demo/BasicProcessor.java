@@ -36,6 +36,8 @@ public class BasicProcessor {
 		
 		demoS3GetObject(resource);
 		
+		demoSmtpEmail(resource);
+		
 		//CommonFileProcessor.demoReadFileLineByLine("data/input.txt");
 		
 		//CommonXmlProcessor.demoParseXmlFile("data/input.txt");
@@ -76,8 +78,21 @@ public class BasicProcessor {
 		
 	}
 	
-	private static void demoSmtpEmail() {
-		AwsSesSmtpClient smtp = new AwsSesSmtpClient("xxx", "yyyy", "email-smtp.us-west-1.amazonaws.com");
+	private static void demoSmtpEmail(ResourceBundle resource) {
+		
+		String smtpUser = System.getenv("APP_AWS_SMTP_USER");
+		String smtpPwd = System.getenv("APP_AWS_SMTP_PWD");
+		
+		if (smtpUser == null || smtpUser.isBlank()) {
+			System.out.printf("Skip Send Email ... %n");
+			return;
+		}
+		
+		String smtpEndpoint = resource.getString("smtp.endpoint");
+		String mailFrom = resource.getString("smtp.mail.from");
+		String mailTo = resource.getString("smtp.mail.to");
+		
+		AwsSesSmtpClient smtp = new AwsSesSmtpClient(smtpUser, smtpPwd, "email-smtp.us-west-1.amazonaws.com");
 		smtp.sendMessage("mail:from", "mail:to", 
 				"test-subject-with-attachment", 
 				"<html><body>See attachment.</body></html>", 
