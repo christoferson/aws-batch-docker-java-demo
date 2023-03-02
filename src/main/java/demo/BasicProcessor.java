@@ -1,6 +1,9 @@
 package demo;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 
@@ -30,6 +33,8 @@ public class BasicProcessor {
 		demoS3ListBucket();
 		
 		demoS3ListObject(resource);
+		
+		demoS3GetObject(resource);
 		
 		//CommonFileProcessor.demoReadFileLineByLine("data/input.txt");
 		
@@ -122,17 +127,47 @@ public class BasicProcessor {
 		String awsRegion = System.getenv("APP_AWS_REGION");
 		
 		if (awsRegion == null || awsRegion.isBlank()) {
-			System.out.printf("Skip Listing Buckets... %n");
+			System.out.printf("Skip Listing Objects... %n");
 			return;
 		}
 
 		try {
 			
-			System.out.printf("Listing Object: Region=%s Bucket=%s %n", awsRegion, resource.getString("s3.bucket.name"));
+			String bucket = resource.getString("s3.bucket.name");
+			System.out.printf("Listing Object: Region=%s Bucket=%s %n", awsRegion, bucket);
 	
 			AwsS3Client s3 = newS3ClientInstance();
 			
-			s3.listObject("b2b-dev-pub");
+			s3.listObject(bucket);
+		
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private static void demoS3GetObject(ResourceBundle resource) {
+		
+		String awsRegion = System.getenv("APP_AWS_REGION");
+		
+		if (awsRegion == null || awsRegion.isBlank()) {
+			System.out.printf("Skip Get Object... %n");
+			return;
+		}
+
+		try {
+			
+			String key = resource.getString("s3.bucket.object.name");
+			String bucket = resource.getString("s3.bucket.name");
+			System.out.printf("Get Object: Region=%s Bucket=%s Key=%s %n", awsRegion, bucket, key);
+	
+			AwsS3Client s3 = newS3ClientInstance();
+			
+			Path path = Paths.get("data", key);
+			
+			Files.deleteIfExists(path);
+			
+			s3.getObject(bucket, key, path);
 		
 		} catch (Exception e) {
 			e.printStackTrace();
