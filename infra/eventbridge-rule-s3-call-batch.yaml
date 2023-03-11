@@ -1,0 +1,148 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: EventBridge Rule (S3) - Call Batch
+
+# Bucket must have event bridge notification enabled
+#  Bucket:
+#    Type: "AWS::S3::Bucket"
+#    Properties:
+#      ...
+#      NotificationConfiguration:
+#         EventBridgeConfiguration:
+#            EventBridgeEnabled: true
+
+Metadata:
+
+  StackVersion: 1
+
+  "AWS::CloudFormation::Interface":
+    ParameterGroups:
+      - Label: 
+          default: "Source Configuration"
+        Parameters: 
+          - BucketName
+      - Label: 
+          default: "Target Configuration"
+        Parameters: 
+          - JobDefinitionArn
+          - JobQueueArn
+    ParameterLabels: 
+      BucketArn: 
+        Default: "BucketName"
+        MinLength: 5
+        MaxLength: 124
+        
+
+Parameters:
+
+  BucketName:
+    Type: "String"
+    Default: "bucket-name"
+    Description: "Name of the Source Bucket"
+    
+  JobDefinitionArn:
+    Type: "String"
+    Default: "arn:aws:s3:::bucket-name"
+    Description: "Arn of the Target Job Definition"
+
+  JobQueueArn:
+    Type: "String"
+    Default: "arn:aws:s3:::bucket-name"
+    Description: "Arn of the Target Job Queue"
+    
+Resources:
+
+  EvenBridgeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      #RoleName: !Sub "event-bridge-role"
+      Description: !Sub "Event Bridge Role - S3 Call Batch"
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+      ManagedPolicyArns:
+        - !Ref EvenBridgeRolePolicy
+        #- arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser
+      Tags:
+        - Key: 'environment'
+          Value: common
+        - Key: "name"
+          Value: "event-bridge-role-s3-call-batch"
+
+  EvenBridgeRolePolicy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      Description: "Event Bridge ManagedPolicy - S3 Call Batch"
+      #ManagedPolicyName: "event-bridge-policy"
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 'batch:SubmitJob'
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - 'logs:CreateLogGroup'
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+            Effect: Allow
+            Resource: '*'
+                #"arn:aws:batch:*:916902469227:compute-environment/*",
+                #"arn:aws:batch:*:916902469227:job/*",
+                #"arn:aws:batch:*:916902469227:job-queue/*",
+                #"arn:aws:batch:*:916902469227:job-definition/*:*",          
+              
+  EventBridgeRule: 
+    Type: AWS::Events::Rule
+    Properties: 
+      #Name: eventbridge-rule-s3-call-batch
+      Description: "Event Bridge Rule S3 Call Batch"
+      EventBusName: default
+      EventPattern:
+        source:
+          - aws.s3
+        detail-type:
+          - "Object Created"
+        detail:
+          bucket:
+            name: 
+              - !Ref BucketName
+      State: "ENABLED"
+      #"RoleArn" : String, # (ARN) of the role that is used for target invocation.
+      Targets:
+        - 
+          Arn: !Ref JobQueueArn
+          Id: "TargetBatch"
+          RoleArn : !GetAtt EvenBridgeRole.Arn
+          RetryPolicy:
+            MaximumEventAgeInSeconds: 3600 #86400
+            MaximumRetryAttempts: 1 #185
+          #DeadLetterConfig:
+          #   Arn: xx
+          InputTransformer:
+            InputPathsMap:
+              "S3ObjectKey": "$.detail.object.key"
+            InputTemplate: |
+              {
+                "Parameters": {"S3Key" : "<S3ObjectKey>"},
+                "ContainerOverrides": {
+                  "Command": ["sh", "-c", "echo s3rocksv2 && java -jar batch.jar <S3ObjectKey>"]
+                }
+              }
+          BatchParameters:
+            #ArrayProperties:
+            #  Size: 950 
+            JobDefinition: !Ref JobDefinitionArn
+            JobName: "eventbridge-rule-s3-call-batch-job"
+            RetryStrategy:
+              Attempts: 1
+
+Outputs:
+
+  EventBridgeRuleName:
+    Value: !Ref EventBridgeRule
