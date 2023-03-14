@@ -23,7 +23,7 @@ public class BasicProcessor {
 
 	public static void main(String[] args) {
 		
-		System.out.printf("Application Version: 1.5 漢字　%n");
+		System.out.printf("Application Version: 1.7 漢字　%n");
 		System.out.printf("Locale: %s　%n", Locale.getDefault());
 		
 		ResourceBundle resource = ResourceBundle.getBundle("application");
