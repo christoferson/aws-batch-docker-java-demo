@@ -21,7 +21,7 @@ public class BasicProcessor {
 
 	public static void main(String[] args) {
 		
-		System.out.printf("Application Version: 1.3 %n");
+		System.out.printf("Application Version: 1.4 漢字　%n");
 		
 		ResourceBundle resource = ResourceBundle.getBundle("application");
 		System.out.println(resource.getString("s3.bucket.name"));
@@ -171,8 +171,9 @@ public class BasicProcessor {
 			s3.listObject(bucket);
 		
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
+			//e.printStackTrace();
+			//throw new RuntimeException(e);
+			System.err.println("Failed to list objects. " + e.getMessage());
 		}
 		
 		System.out.printf("******************************************************** %n");
@@ -212,8 +213,9 @@ public class BasicProcessor {
 			s3.getObject(bucket, key, path);
 		
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
+			//e.printStackTrace();
+			//throw new RuntimeException(e);
+			System.err.println("Failed to get object. " + e.getMessage());
 		}
 		
 		System.out.printf("******************************************************** %n");
