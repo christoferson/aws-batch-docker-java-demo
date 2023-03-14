@@ -21,7 +21,7 @@ public class BasicProcessor {
 
 	public static void main(String[] args) {
 		
-		System.out.printf("Application Version: 1.2 %n");
+		System.out.printf("Application Version: 1.3 %n");
 		
 		ResourceBundle resource = ResourceBundle.getBundle("application");
 		System.out.println(resource.getString("s3.bucket.name"));
@@ -71,13 +71,19 @@ public class BasicProcessor {
 		for (String arg : args) {
 			System.out.printf("Arg[x]: %s %n", arg);
 		}
+		
+		System.out.printf("******************************************************** %n");
 
 	}
 	
 	private static void demoEnvironmentVariables() {
 		
 		System.out.printf("Env.APP_ENV: %s %n", System.getenv("APP_ENV"));
-		
+		System.out.printf("Env.APP_AWS_REGION: %s %n", System.getenv("APP_AWS_REGION"));
+		System.out.printf("Env.APP_AWS_BUCKET_NAME: %s %n", System.getenv("APP_AWS_BUCKET_NAME"));
+		System.out.printf("Env.APP_AWS_BUCKET_OBJECT_KEY: %s %n", System.getenv("APP_AWS_BUCKET_OBJECT_KEY"));
+
+		System.out.printf("******************************************************** %n");
 	}
 	
 	private static void demoSmtpEmail(ResourceBundle resource) {
@@ -99,6 +105,9 @@ public class BasicProcessor {
 				"test-subject-with-attachment", 
 				"<html><body>See attachment.</body></html>", 
 				new File("output-csv.txt"));
+	
+		System.out.printf("******************************************************** %n");
+	
 	}
 	
 	private static void demoSimulateWork() {
@@ -138,6 +147,8 @@ public class BasicProcessor {
 			//throw new RuntimeException(e);
 			System.err.println("Failed to list all buckets. " + e.getMessage());
 		}
+		
+		System.out.printf("******************************************************** %n");
 	}
 	
 	private static void demoS3ListObject(ResourceBundle resource) {
@@ -163,6 +174,8 @@ public class BasicProcessor {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
+		
+		System.out.printf("******************************************************** %n");
 	}
 	
 	private static void demoS3GetObject(ResourceBundle resource) {
@@ -188,9 +201,13 @@ public class BasicProcessor {
 			Files.deleteIfExists(path);
 			
 			Path parent = path.getParent();
+			System.out.printf("Get Object: Path=%s Parent=%s %n", path, parent);
 			if (parent != null && !Files.exists(parent)) {
 				Files.createDirectories(parent);
 			}
+			
+			System.out.printf("Get Object: Listing data %n");
+			Files.list(Paths.get("data")).forEach(System.out::println);
 			
 			s3.getObject(bucket, key, path);
 		
@@ -198,6 +215,8 @@ public class BasicProcessor {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
+		
+		System.out.printf("******************************************************** %n");
 	}
 
 	private static String resolveAwsBucketName(ResourceBundle resource) {
