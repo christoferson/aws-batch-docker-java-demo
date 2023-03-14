@@ -187,6 +187,11 @@ public class BasicProcessor {
 			
 			Files.deleteIfExists(path);
 			
+			Path parent = path.getParent();
+			if (parent != null && !Files.exists(parent)) {
+				Files.createDirectories(parent);
+			}
+			
 			s3.getObject(bucket, key, path);
 		
 		} catch (Exception e) {
