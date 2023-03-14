@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.util.Objects;
 
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.Bucket;
@@ -14,6 +15,8 @@ import software.amazon.awssdk.services.s3.model.ListBucketsRequest;
 import software.amazon.awssdk.services.s3.model.ListBucketsResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
 public class AwsS3Client {
@@ -69,4 +72,11 @@ public class AwsS3Client {
 		System.out.println(response);
 	
 	}
+	
+	public void putObject(String bucket, String key, Path path) {
+		PutObjectRequest request = PutObjectRequest.builder().bucket(bucket).key(key).build();
+		PutObjectResponse response = this.client.putObject(request, RequestBody.fromFile(path));
+		System.out.println(response);
+	}
+
 }
