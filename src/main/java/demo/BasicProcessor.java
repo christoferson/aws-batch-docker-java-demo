@@ -148,10 +148,11 @@ public class BasicProcessor {
 			System.out.printf("Skip Listing Objects... %n");
 			return;
 		}
+		
+		String bucket = resolveAwsBucketName(resource);
 
 		try {
-			
-			String bucket = resource.getString("s3.bucket.name");
+
 			System.out.printf("Listing Object: Region=%s Bucket=%s %n", awsRegion, bucket);
 	
 			AwsS3Client s3 = newS3ClientInstance();
@@ -172,11 +173,12 @@ public class BasicProcessor {
 			System.out.printf("Skip Get Object... %n");
 			return;
 		}
-
+		
+		String bucket = resolveAwsBucketName(resource);
+		String key = resolveAwsBucketObjectKey(resource);
+		
 		try {
 			
-			String key = resource.getString("s3.bucket.object.name");
-			String bucket = resource.getString("s3.bucket.name");
 			System.out.printf("Get Object: Region=%s Bucket=%s Key=%s %n", awsRegion, bucket, key);
 	
 			AwsS3Client s3 = newS3ClientInstance();
@@ -193,6 +195,29 @@ public class BasicProcessor {
 		}
 	}
 
+	private static String resolveAwsBucketName(ResourceBundle resource) {
+		
+		String bucket = System.getenv("APP_AWS_BUCKET_NAME");
+		if (bucket == null || bucket.isBlank()) {
+			bucket = resource.getString("s3.bucket.name");
+		}
+		
+		return bucket;
+
+	}
+	
+	private static String resolveAwsBucketObjectKey(ResourceBundle resource) {
+		
+		String bucket = System.getenv("APP_AWS_BUCKET_OBJECT_KEY");
+		if (bucket == null || bucket.isBlank()) {
+			bucket = resource.getString("s3.bucket.object.name");
+		}
+		
+		return bucket;
+
+	}
+	
+	
 	private static AwsS3Client newS3ClientInstance() {
 		String awsKey = System.getenv("APP_AWS_KEY");
 		String awsSecret = System.getenv("APP_AWS_SECRET");
