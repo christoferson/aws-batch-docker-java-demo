@@ -23,7 +23,7 @@ public class BasicProcessor {
 
 	public static void main(String[] args) {
 		
-		System.out.printf("Application Version: 1.7 漢字　%n");
+		System.out.printf("Application Version: 1.8 漢字　%n");
 		System.out.printf("Locale: %s　%n", Locale.getDefault());
 		
 		ResourceBundle resource = ResourceBundle.getBundle("application");
@@ -93,8 +93,9 @@ public class BasicProcessor {
 		System.out.printf("Env.APP_AWS_REGION: %s %n", System.getenv("APP_AWS_REGION"));
 		System.out.printf("Env.APP_AWS_BUCKET_NAME: %s %n", System.getenv("APP_AWS_BUCKET_NAME"));
 		System.out.printf("Env.APP_AWS_BUCKET_OBJECT_KEY: %s %n", System.getenv("APP_AWS_BUCKET_OBJECT_KEY"));
-
+		System.out.printf("Env.APP_SERVICE_NAME: %s %n", System.getenv("APP_SERVICE_NAME"));
 		System.out.printf("******************************************************** %n");
+
 	}
 	
 	private static void demoSmtpEmail(ResourceBundle resource) {
@@ -228,6 +229,12 @@ public class BasicProcessor {
 		}
 		
 		String key = String.format("outbound/batch-output-%s.txt", LocalDateTime.now());
+		String serviceName = System.getenv("APP_SERVICE_NAME");
+		if (serviceName == null || serviceName.isBlank()) {
+			key = String.format("outbound/batch-output-%s.txt", LocalDateTime.now());
+		} else {
+			key = String.format("outbound/%s/batch-output-%s.txt", serviceName, LocalDateTime.now());
+		}
 		
 		try {
 			

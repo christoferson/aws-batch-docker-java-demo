@@ -101,4 +101,6 @@ This means that you did not include an implementation e.g. org.eclipse.angus for
 
 - https://github.com/highsource/jaxb2-basics
 
+- https://docs.docker.com/build/ci/github-actions/
 
+- https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
