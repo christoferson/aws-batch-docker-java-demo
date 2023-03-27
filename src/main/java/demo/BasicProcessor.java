@@ -1,14 +1,19 @@
 package demo;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.ThreadLocalRandom;
 
+import demo.client.AwsCloudwatchClient;
 import demo.client.AwsS3Client;
 import demo.csv.CommonCsvProcessor;
 import demo.file.CommonFileProcessor;
@@ -23,7 +28,7 @@ public class BasicProcessor {
 
 	public static void main(String[] args) {
 		
-		System.out.printf("Application Version: 1.8 漢字　%n");
+		System.out.printf("Application Version: 2.0 漢字　%n");
 		System.out.printf("Locale: %s　%n", Locale.getDefault());
 		
 		ResourceBundle resource = ResourceBundle.getBundle("application");
@@ -48,6 +53,8 @@ public class BasicProcessor {
 		demoS3GetObject(s3, resource);
 		
 		demoS3PutObject(s3, resource);
+		
+		demoPutMetric();
 		
 		demoSmtpEmail(resource);
 		
@@ -202,6 +209,15 @@ public class BasicProcessor {
 			Files.list(Paths.get("data")).forEach(System.out::println);
 			
 			s3.getObject(bucket, key, path);
+			
+			if (key.endsWith(".txt") || key.endsWith(".csv") || key.endsWith(".xml") || key.endsWith(".md")) {
+				System.out.printf("--- Print File Content %s %n", path);
+				try (BufferedReader reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
+					reader.lines().limit(5).forEach(line -> {
+						System.out.println(line);
+					});
+				}
+			}
 		
 		} catch (Exception e) {
 			//e.printStackTrace();
@@ -251,6 +267,22 @@ public class BasicProcessor {
 		}
 		
 		System.out.printf("******************************************************** %n");
+	}
+	
+	private static void demoPutMetric() {
+		
+		AwsCloudwatchClient cw = newCloudwatchClientInstance();
+		try {
+			
+			cw.metricPut("DemoBatchNamespace", "ExecutionCount", ThreadLocalRandom.current().nextDouble(1, 8), 
+					Map.of("InstanceID", "1662602716588"));
+			
+		} catch (Exception e) {
+			System.err.println("Failed to put metric. " + e.getMessage());
+		}
+	
+		System.out.printf("******************************************************** %n");
+		
 	}
 	
 	private static String resolveAwsBucketName(ResourceBundle resource) {
@@ -305,6 +337,24 @@ public class BasicProcessor {
 			s3 = new AwsS3Client(region);
 		}
 		return s3;
+	}
+	
+	private static AwsCloudwatchClient newCloudwatchClientInstance() {
+		String awsKey = System.getenv("APP_AWS_KEY");
+		String awsSecret = System.getenv("APP_AWS_SECRET");
+		String awsRegion = System.getenv("APP_AWS_REGION");
+		Region region = Region.of(awsRegion);
+		AwsCloudwatchClient client = null;
+		if (awsKey != null && awsSecret != null) {
+			System.out.printf("Creating Cloudwatch Client: Found ENV Credentials (APP_AWS_KEY, APP_AWS_SECRET). %n");
+			AwsCredentials credentials = AwsBasicCredentials.create(awsKey, awsSecret); 
+			AwsCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(credentials);
+			client = new AwsCloudwatchClient(credentialsProvider, region);
+		} else {
+			System.out.printf("Creating Cloudwatch Client: Using Container Credentials. %n");
+			client = new AwsCloudwatchClient(region);
+		}
+		return client;
 	}
 
 }
