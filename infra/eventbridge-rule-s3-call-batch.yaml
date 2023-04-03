@@ -51,7 +51,7 @@ Parameters:
     
 Resources:
 
-  EvenBridgeRole:
+  EventBridgeRole:
     Type: AWS::IAM::Role
     Properties:
       #RoleName: !Sub "event-bridge-role"
@@ -66,7 +66,7 @@ Resources:
             Principal:
               Service: events.amazonaws.com
       ManagedPolicyArns:
-        - !Ref EvenBridgeRolePolicy
+        - !Ref EventBridgeRolePolicy
         #- arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser
       Tags:
         - Key: 'environment'
@@ -74,7 +74,7 @@ Resources:
         - Key: "name"
           Value: "event-bridge-role-s3-call-batch"
 
-  EvenBridgeRolePolicy:
+  EventBridgeRolePolicy:
     Type: "AWS::IAM::ManagedPolicy"
     Properties:
       Description: "Event Bridge ManagedPolicy - S3 Call Batch"
@@ -118,7 +118,7 @@ Resources:
         - 
           Arn: !Ref JobQueueArn
           Id: "TargetBatch"
-          RoleArn : !GetAtt EvenBridgeRole.Arn
+          RoleArn : !GetAtt EventBridgeRole.Arn
           RetryPolicy:
             MaximumEventAgeInSeconds: 3600 #86400
             MaximumRetryAttempts: 1 #185

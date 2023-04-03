@@ -137,6 +137,7 @@ Resources:
               Service: ecs-tasks.amazonaws.com
       ManagedPolicyArns:
         - !Ref BatchJobRolePolicy
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
         #- 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
         #- 'arn:aws:iam::aws:policy/AmazonElasticFileSystemFullAccess'
       Path: /
