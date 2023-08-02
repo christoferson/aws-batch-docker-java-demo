@@ -41,6 +41,8 @@ public class BasicProcessor {
 		System.out.printf("******************************************************** %n");
 
 		demoArguments(args);
+		
+		printAwsBatchEnvironmentVariables();
 
 		demoEnvironmentVariables();
 
@@ -90,6 +92,16 @@ public class BasicProcessor {
 			System.out.printf("Arg[x]: %s %n", arg);
 		}
 		
+		System.out.printf("******************************************************** %n");
+
+	}
+	
+	private static void printAwsBatchEnvironmentVariables() {
+		
+		System.out.printf("Env.AWS_BATCH_CE_NAME: %s %n", System.getenv("AWS_BATCH_CE_NAME"));
+		System.out.printf("Env.AWS_BATCH_JOB_ATTEMPT: %s %n", System.getenv("AWS_BATCH_JOB_ATTEMPT"));
+		System.out.printf("Env.AWS_BATCH_JOB_ID: %s %n", System.getenv("AWS_BATCH_JOB_ID"));
+		System.out.printf("Env.AWS_BATCH_JQ_NAME: %s %n", System.getenv("AWS_BATCH_JQ_NAME"));
 		System.out.printf("******************************************************** %n");
 
 	}
